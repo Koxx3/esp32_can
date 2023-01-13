@@ -107,4 +107,8 @@ bool CAN_GetListenOnlyMode();
  */
 int CAN_stop(void);
 
+bool CAN_rxFault2();
+bool CAN_txFault2();
+uint8_t CAN_isFaulted2();
+
 #endif

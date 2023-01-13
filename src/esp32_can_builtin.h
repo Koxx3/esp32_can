@@ -80,6 +80,9 @@ public:
   uint32_t get_rx_buff(CAN_FRAME &msg);
   bool processFrame(CAN_frame_t &frame);
   void sendCallback(CAN_FRAME *frame);
+  bool hasRxFault2();
+  bool hasTxFault2();
+  uint8_t isFaulted2();
 
   void setCANPins(gpio_num_t rxPin, gpio_num_t txPin);
 

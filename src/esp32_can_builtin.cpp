@@ -22,6 +22,9 @@ extern QueueHandle_t lowLevelRXQueue;
 
 extern volatile uint32_t needReset;
 extern volatile uint32_t faulted;
+volatile bool rxFault2;
+volatile bool txFault2;
+volatile uint8_t faulted2;
 
 ESP32CAN::ESP32CAN(gpio_num_t rxPin, gpio_num_t txPin) : CAN_COMMON(32)
 {
@@ -391,3 +394,20 @@ uint32_t ESP32CAN::get_rx_buff(CAN_FRAME &msg)
     return false;
 }
 
+
+bool ESP32CAN::hasRxFault2()
+{
+    return CAN_rxFault2();
+}
+
+bool ESP32CAN::hasTxFault2()
+{
+    return CAN_txFault2();
+}
+
+uint8_t ESP32CAN::isFaulted2()
+{
+    uint8_t oldFaulted2 = faulted2;
+    faulted2 = 0;
+    return oldFaulted2;
+}

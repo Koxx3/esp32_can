@@ -43,9 +43,8 @@
 volatile uint32_t biIntsCounter = 0;
 volatile uint32_t biReadFrames = 0;
 volatile uint32_t needReset = 0;
-volatile uint32_t faulted = 0;
-volatile uint32_t rxFault = 0;
-volatile uint32_t txFault = 0;
+volatile uint32_t faulted;
+extern volatile uint8_t faulted2;
 QueueHandle_t lowLevelRXQueue;
 
 static portMUX_TYPE builtincan_spinlock = portMUX_INITIALIZER_UNLOCKED;
@@ -93,6 +92,12 @@ extern "C" void IRAM_ATTR CAN_isr(void *arg_p)
     {
     	needReset = 1;
         faulted = true;
+        faulted2 = interrupt & (__CAN_IRQ_ERR						//0x4
+                      | __CAN_IRQ_DATA_OVERRUN			//0x8
+                      | __CAN_IRQ_WAKEUP				//0x10
+                      | __CAN_IRQ_ERR_PASSIVE			//0x20
+                      | __CAN_IRQ_BUS_ERR				//0x80
+	                );
     }
     CANBI_EXIT_CRITICAL();
 
@@ -149,10 +154,7 @@ BaseType_t IRAM_ATTR CAN_read_frame()
 
     //Let the hardware know the frame has been read.
     MODULE_CAN->CMR.B.RRB = 1;
-
     
-    rxFault = (MODULE_CAN->RXERR.U > 0);
-
     return xHigherPriorityTaskWoken;
 }
 
@@ -209,8 +211,6 @@ int IRAM_ATTR CAN_write_frame(const CAN_frame_t* p_frame)
 
     // Transmit frame
     MODULE_CAN->CMR.B.TR=1;
-
-    txFault = (MODULE_CAN->TXERR.U > 0);
 
     return 0;
 }
@@ -337,4 +337,19 @@ int CAN_stop()
     MODULE_CAN->IER.U = 0; //enable no interrupts
 
 	return 0;
+}
+
+bool CAN_rxFault2()
+{
+    return (MODULE_CAN->RXERR.U > 0);;
+}
+
+bool CAN_txFault2()
+{
+    return (MODULE_CAN->TXERR.U > 0);;
+}
+
+uint8_t CAN_isFaulted2()
+{
+    return faulted2;
 }
