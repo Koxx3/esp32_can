@@ -44,6 +44,8 @@ volatile uint32_t biIntsCounter = 0;
 volatile uint32_t biReadFrames = 0;
 volatile uint32_t needReset = 0;
 volatile uint32_t faulted = 0;
+volatile uint32_t rxFault = 0;
+volatile uint32_t txFault = 0;
 QueueHandle_t lowLevelRXQueue;
 
 static portMUX_TYPE builtincan_spinlock = portMUX_INITIALIZER_UNLOCKED;
@@ -91,10 +93,6 @@ extern "C" void IRAM_ATTR CAN_isr(void *arg_p)
     {
     	needReset = 1;
         faulted = true;
-    }
-    else
-    {
-        faulted = false;
     }
     CANBI_EXIT_CRITICAL();
 
@@ -152,6 +150,9 @@ BaseType_t IRAM_ATTR CAN_read_frame()
     //Let the hardware know the frame has been read.
     MODULE_CAN->CMR.B.RRB = 1;
 
+    
+    rxFault = (MODULE_CAN->RXERR.U > 0);
+
     return xHigherPriorityTaskWoken;
 }
 
@@ -208,6 +209,8 @@ int IRAM_ATTR CAN_write_frame(const CAN_frame_t* p_frame)
 
     // Transmit frame
     MODULE_CAN->CMR.B.TR=1;
+
+    txFault = (MODULE_CAN->TXERR.U > 0);
 
     return 0;
 }

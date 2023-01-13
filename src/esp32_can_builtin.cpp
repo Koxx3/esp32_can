@@ -21,6 +21,7 @@ QueueHandle_t callbackQueue;
 extern QueueHandle_t lowLevelRXQueue;
 
 extern volatile uint32_t needReset;
+extern volatile uint32_t faulted;
 
 ESP32CAN::ESP32CAN(gpio_num_t rxPin, gpio_num_t txPin) : CAN_COMMON(32)
 {
@@ -50,6 +51,7 @@ void CAN_WatchDog_Builtin( void *pvParameters )
         {
             espCan->cyclesSinceTraffic = 0;
             needReset = 0;
+            faulted = false;
             if (CAN_cfg.speed > 0 && CAN_cfg.speed <= 1000000ul && espCan->initializedResources == true) 
             {
                 if (espCan->debuggingMode)   Serial.println("Builtin CAN Forced Reset!");
@@ -203,6 +205,7 @@ uint32_t ESP32CAN::init(uint32_t ul_baudrate)
     _init();
     CAN_cfg.speed = (CAN_speed_t)(ul_baudrate / 1000);
     needReset = 0;
+    faulted = false;
     return CAN_init();
 }
 
@@ -220,6 +223,7 @@ uint32_t ESP32CAN::beginAutoSpeed()
         CAN_cfg.speed = (CAN_speed_t)bauds[i];
         CAN_stop(); //stop hardware so we can reconfigure it
         needReset = 0;
+        faulted = false;
         Serial.print("Trying Speed ");
         Serial.print(bauds[i] * 1000);
         CAN_init(); //set it up
@@ -248,6 +252,7 @@ uint32_t ESP32CAN::set_baudrate(uint32_t ul_baudrate)
     CAN_stop();
     CAN_cfg.speed = (CAN_speed_t)(ul_baudrate / 1000);
     needReset = 0;
+    faulted = false;
     return CAN_init();
 }
 
@@ -261,12 +266,14 @@ void ESP32CAN::enable()
     CAN_stop();
     CAN_init();
     needReset = 0;
+    faulted = false;
 }
 
 void ESP32CAN::disable()
 {
     CAN_stop();
     needReset = 0;
+    faulted = false;
 }
 
 //This function is too big to be running in interrupt context. Refactored so it doesn't.
