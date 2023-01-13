@@ -43,6 +43,7 @@
 volatile uint32_t biIntsCounter = 0;
 volatile uint32_t biReadFrames = 0;
 volatile uint32_t needReset = 0;
+volatile uint32_t faulted = 0;
 QueueHandle_t lowLevelRXQueue;
 
 static portMUX_TYPE builtincan_spinlock = portMUX_INITIALIZER_UNLOCKED;
@@ -89,6 +90,11 @@ extern "C" void IRAM_ATTR CAN_isr(void *arg_p)
 	)) != 0) 
     {
     	needReset = 1;
+        faulted = true;
+    }
+    else
+    {
+        faulted = false;
     }
     CANBI_EXIT_CRITICAL();
 
