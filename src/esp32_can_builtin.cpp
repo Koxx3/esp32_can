@@ -57,7 +57,7 @@ void CAN_WatchDog_Builtin( void *pvParameters )
             faulted = false;
             if (CAN_cfg.speed > 0 && CAN_cfg.speed <= 1000000ul && espCan->initializedResources == true) 
             {
-                if (espCan->debuggingMode)   Serial.println("Builtin CAN Forced Reset!");
+                Serial.println(F("CAN_WatchDog_Builtin / Builtin CAN Forced Reset!"));
                 CAN_stop();
                 CAN_init();
             }
@@ -395,12 +395,12 @@ uint32_t ESP32CAN::get_rx_buff(CAN_FRAME &msg)
 }
 
 
-bool ESP32CAN::hasRxFault2()
+uint8_t ESP32CAN::hasRxFault2()
 {
     return CAN_rxFault2();
 }
 
-bool ESP32CAN::hasTxFault2()
+uint8_t ESP32CAN::hasTxFault2()
 {
     return CAN_txFault2();
 }

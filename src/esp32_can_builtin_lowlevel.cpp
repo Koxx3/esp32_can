@@ -92,6 +92,7 @@ extern "C" void IRAM_ATTR CAN_isr(void *arg_p)
     {
     	needReset = 1;
         faulted = true;
+
         faulted2 = interrupt & (__CAN_IRQ_ERR						//0x4
                       | __CAN_IRQ_DATA_OVERRUN			//0x8
                       | __CAN_IRQ_WAKEUP				//0x10
@@ -339,14 +340,14 @@ int CAN_stop()
 	return 0;
 }
 
-bool CAN_rxFault2()
+uint8_t CAN_rxFault2()
 {
-    return (MODULE_CAN->RXERR.U > 0);;
+    return MODULE_CAN->RXERR.U;
 }
 
-bool CAN_txFault2()
+uint8_t CAN_txFault2()
 {
-    return (MODULE_CAN->TXERR.U > 0);;
+    return MODULE_CAN->TXERR.U;;
 }
 
 uint8_t CAN_isFaulted2()
