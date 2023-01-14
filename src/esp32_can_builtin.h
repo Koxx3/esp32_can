@@ -83,6 +83,8 @@ public:
   uint8_t hasRxFault2();
   uint8_t hasTxFault2();
   uint8_t isFaulted2();
+  uint8_t rxQueueFull();
+  uint8_t isRxProcQueueFull();
 
   void setCANPins(gpio_num_t rxPin, gpio_num_t txPin);
 

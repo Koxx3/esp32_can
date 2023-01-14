@@ -29,7 +29,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
 
-#include "esp_intr.h"
+#include "esp_intr_alloc.h"
 #include "soc/dport_reg.h"
 #include <math.h>
 
@@ -44,6 +44,7 @@ volatile uint32_t biIntsCounter = 0;
 volatile uint32_t biReadFrames = 0;
 volatile uint32_t needReset = 0;
 volatile uint32_t faulted;
+volatile uint32_t rxQueueFull = 0;
 extern volatile uint8_t faulted2;
 QueueHandle_t lowLevelRXQueue;
 
@@ -151,7 +152,8 @@ BaseType_t IRAM_ATTR CAN_read_frame()
         	__frame.data.u8[__byte_i] = MODULE_CAN->MBX_CTRL.FCTRL.TX_RX.EXT.data[__byte_i];
     }
 
-    xQueueSendFromISR(lowLevelRXQueue, &__frame, &xHigherPriorityTaskWoken);
+    if (xQueueSendFromISR(lowLevelRXQueue, &__frame, &xHigherPriorityTaskWoken) == false)
+        rxQueueFull = true;
 
     //Let the hardware know the frame has been read.
     MODULE_CAN->CMR.B.RRB = 1;
@@ -354,3 +356,11 @@ uint8_t CAN_isFaulted2()
 {
     return faulted2;
 }
+
+
+uint8_t CAN_rxQueueFull()
+{
+    return rxQueueFull;
+}
+
+

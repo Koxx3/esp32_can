@@ -110,5 +110,6 @@ int CAN_stop(void);
 uint8_t CAN_rxFault2();
 uint8_t CAN_txFault2();
 uint8_t CAN_isFaulted2();
+uint8_t CAN_rxQueueFull();
 
 #endif

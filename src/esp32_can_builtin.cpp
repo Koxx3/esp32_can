@@ -25,6 +25,7 @@ extern volatile uint32_t faulted;
 volatile bool rxFault2;
 volatile bool txFault2;
 volatile uint8_t faulted2;
+volatile uint8_t rxProcQueueFull = 0;
 
 ESP32CAN::ESP32CAN(gpio_num_t rxPin, gpio_num_t txPin) : CAN_COMMON(32)
 {
@@ -302,13 +303,15 @@ bool ESP32CAN::processFrame(CAN_frame_t &frame)
             if (cbCANFrame[i])
             {
                 msg.fid = i;
-                xQueueSend(callbackQueue, &msg, 0);
+                if (xQueueSend(callbackQueue, &msg, 0) != pdTRUE)
+                    rxProcQueueFull++;
                 return true;
             }
             else if (cbGeneral)
             {
                 msg.fid = 0xFF;
-                xQueueSend(callbackQueue, &msg, 0);
+                if (xQueueSend(callbackQueue, &msg, 0) != pdTRUE)
+                    rxProcQueueFull++;
                 return true;
             }
             else
@@ -321,13 +324,15 @@ bool ESP32CAN::processFrame(CAN_frame_t &frame)
                         if (thisListener->isCallbackActive(i)) 
 				        {
 					        msg.fid = 0x80000000ul + (listenerPos << 24ul) + i;
-                            xQueueSend(callbackQueue, &msg, 0);
+                            if (xQueueSend(callbackQueue, &msg, 0) != pdTRUE)
+                                rxProcQueueFull++;
                             return true;
 				        }
 				        else if (thisListener->isCallbackActive(numFilters)) //global catch-all 
 				        {
                             msg.fid = 0x80000000ul + (listenerPos << 24ul) + 0xFF;
-					        xQueueSend(callbackQueue, &msg, 0);
+                            if (xQueueSend(callbackQueue, &msg, 0) != pdTRUE)
+                                rxProcQueueFull++;
                             return true;
 				        }
                     }
@@ -410,4 +415,14 @@ uint8_t ESP32CAN::isFaulted2()
     uint8_t oldFaulted2 = faulted2;
     faulted2 = 0;
     return oldFaulted2;
+}
+
+uint8_t ESP32CAN::rxQueueFull()
+{
+    return CAN_rxQueueFull();
+}
+
+uint8_t ESP32CAN::isRxProcQueueFull()
+{
+    return rxProcQueueFull;
 }
