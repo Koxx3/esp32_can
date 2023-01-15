@@ -80,15 +80,12 @@ public:
   uint32_t get_rx_buff(CAN_FRAME &msg);
   bool processFrame(CAN_frame_t &frame);
   void sendCallback(CAN_FRAME *frame);
-  uint8_t hasRxFault2();
-  uint8_t hasTxFault2();
-  uint8_t isFaulted2();
-  uint8_t rxQueueFull();
-  uint8_t isRxProcQueueFull();
 
   void setCANPins(gpio_num_t rxPin, gpio_num_t txPin);
 
   friend void CAN_WatchDog_Builtin( void *pvParameters );
+
+  uint32_t isFaulted2();
 
 protected:
   bool initializedResources;

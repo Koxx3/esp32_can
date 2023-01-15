@@ -71,7 +71,7 @@ typedef struct {
 }CAN_frame_t;
 
 
-BaseType_t CAN_read_frame();
+esp_err_t CAN_read_frame(CAN_frame_t&);
 
 /**
  * \brief Initialize the CAN Module
@@ -107,9 +107,6 @@ bool CAN_GetListenOnlyMode();
  */
 int CAN_stop(void);
 
-uint8_t CAN_rxFault2();
-uint8_t CAN_txFault2();
-uint8_t CAN_isFaulted2();
-uint8_t CAN_rxQueueFull();
+uint32_t CAN_isFaulted2();
 
 #endif
