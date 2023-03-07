@@ -21,6 +21,8 @@ extern QueueHandle_t lowLevelRXQueue;
 
 extern volatile uint32_t needReset;
 extern volatile uint32_t faulted;
+extern volatile uint32_t iFrameRx;
+
 volatile bool rxFault2;
 volatile bool txFault2;
 volatile uint8_t faulted2;
@@ -222,14 +224,14 @@ uint32_t ESP32CAN::init(uint32_t ul_baudrate)
 
 uint32_t ESP32CAN::beginAutoSpeed()
 {
-    const uint32_t bauds[7] = {1000, 500, 250, 125, 800, 80, 33}; // list of speeds to try, scaled down by 1000x
+    const uint32_t bauds[4] = {1000, 250, 125, 500}; // list of speeds to try, scaled down by 1000x
     bool oldLOM = CAN_GetListenOnlyMode();
 
     _init();
 
     CAN_stop();
     CAN_SetListenOnly(true);
-    for (int i = 0; i < 7; i++)
+    for (int i = 0; i < 4; i++)
     {
         CAN_cfg.speed = (CAN_speed_t)bauds[i];
         CAN_stop(); // stop hardware so we can reconfigure it
@@ -237,18 +239,20 @@ uint32_t ESP32CAN::beginAutoSpeed()
         faulted = false;
         Serial.print("Trying Speed ");
         Serial.print(bauds[i] * 1000);
+        Serial.print("\n");
         CAN_init();                 // set it up
         delay(600);                 // wait a while
-        if (cyclesSinceTraffic < 2) // only would happen if there had been traffic
+        if ((!isFaulted2()) && (iFrameRx > 0)) // only would happen if there had been traffic
         {
             CAN_stop();
             CAN_SetListenOnly(oldLOM);
             CAN_init();
-            Serial.println(" SUCCESS!");
+            Serial.println(" SUCCESS at " + (String)bauds[i] + "K !!");
             return bauds[i] * 1000;
         }
         else
         {
+            iFrameRx = 0;
             Serial.println(" FAILED.");
         }
     }

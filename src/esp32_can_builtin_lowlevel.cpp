@@ -45,6 +45,7 @@ volatile uint32_t biReadFrames = 0;
 volatile uint32_t needReset = 0;
 volatile uint32_t faulted;
 volatile uint32_t rxQueueFull = 0;
+volatile uint32_t iFrameRx = 0;
 extern volatile uint8_t faulted2;
 QueueHandle_t lowLevelRXQueue;
 
@@ -140,6 +141,9 @@ BaseType_t IRAM_ATTR CAN_read_frame()
         //deep copy data bytes
         for(__byte_i = 0;__byte_i < __frame.FIR.B.DLC; __byte_i++)
         	__frame.data.u8[__byte_i] = MODULE_CAN->MBX_CTRL.FCTRL.TX_RX.STD.data[__byte_i];
+
+        iFrameRx++;
+
     }
     //extended frame
     else
@@ -150,6 +154,8 @@ BaseType_t IRAM_ATTR CAN_read_frame()
         //deep copy data bytes
         for(__byte_i=0;__byte_i < __frame.FIR.B.DLC; __byte_i++)
         	__frame.data.u8[__byte_i] = MODULE_CAN->MBX_CTRL.FCTRL.TX_RX.EXT.data[__byte_i];
+
+        iFrameRx++;
     }
 
     if (xQueueSendFromISR(lowLevelRXQueue, &__frame, &xHigherPriorityTaskWoken) == false)
