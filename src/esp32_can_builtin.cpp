@@ -375,7 +375,8 @@ bool ESP32CAN::sendFrame(CAN_FRAME &txFrame)
     uint32_t txQueueAvailTmp = uxQueueSpacesAvailable(CAN_cfg.tx_queue);
     if (txQueueAvailTmp < txQueueAvail) {
         txQueueAvail = txQueueAvailTmp;
-        Serial.println("-------------------- txQueueAvail = " + (String)txQueueAvail);
+        if (txQueueAvail < 20)
+            Serial.println("-------------------- txQueueAvail = " + (String)txQueueAvail);
     }
 
     if (CAN_TX_IsBusy()) // hardware already sending, queue for sending when possible
@@ -413,7 +414,8 @@ uint32_t ESP32CAN::get_rx_buff(CAN_FRAME &msg)
     uint32_t rxQueueAvailTmp = uxQueueSpacesAvailable(CAN_cfg.rx_queue);
     if (rxQueueAvailTmp < rxQueueAvail) {
         rxQueueAvail = rxQueueAvailTmp;
-        Serial.println("-------------------- rxQueueAvail = " + (String)rxQueueAvail);
+        if (rxQueueAvail < 20)
+            Serial.println("-------------------- rxQueueAvail = " + (String)rxQueueAvail);
     }
 
 
