@@ -69,7 +69,7 @@ void CAN_WatchDog_Builtin(void *pvParameters)
     }
 }
 
-void task_LowLevelRX(void *pvParameters)
+IRAM_ATTR void task_LowLevelRX(void *pvParameters)
 {
     ESP32CAN *espCan = (ESP32CAN *)pvParameters;
     CAN_frame_t rxFrame;
